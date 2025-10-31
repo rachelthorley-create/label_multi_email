@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-<h2>Label Generator v1.3</h2>
+<h2>Label Generator v1.4</h2>
 <p style="max-width:900px;text-align:center">
 Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export engraving instruction file for all labels.
 </p>
@@ -31,13 +31,20 @@ Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> 
   <input id="qty1" type="number" min="1" value="1" style="width:60px">
 </label>
 
-<div class="button-row" id="topButtons">
-  <button id="previewBtn" type="button">Preview Label(s)</button>
-  <button id="downloadBtn" type="button">Download engraving Instruction file</button>
-  <button id="toggleAdvanced" type="button">Show Advanced Options</button>
-  <button id="submitBtn">Submit Design for Engraving</button>
+
+
+  <div id="userInfo" style="margin-bottom: 10px; display: flex; flex-direction: row; gap: 10px;">
+  <input type="text" id="userName" placeholder="Your Name" style="padding:5px; width:160px;">
+  <input type="email" id="userEmail" placeholder="Your Email" style="padding:5px; width:200px;">
 </div>
 
+<div class="button-row">
+  <button id="previewBtn">Preview Labels</button>
+  <button id="downloadBtn">Download All SVGs</button>
+  <button id="submitBtn">Submit for Engraving</button>
+</div>
+
+  
 <div class="advanced" id="advancedOptions">
   <div style="display:flex;gap:12px;flex-wrap:wrap">
     <div style="flex:1;min-width:180px">
@@ -333,14 +340,14 @@ function downloadJson(){
 async function submitToGoogleSheet() {
   if (!labelData) return alert("Upload JSON first");
 
-  // Ask for name and email in one popup
-  const userInfo = prompt("Please enter your name and email, separated by a comma:\n(e.g. John Smith, john@example.com)");
-  if (!userInfo) return alert("Submission cancelled.");
+  const name = document.getElementById("userName").value.trim();
+  const email = document.getElementById("userEmail").value.trim();
 
-  const [name, email] = userInfo.split(",").map(s => s.trim());
-  if (!name || !email) return alert("Please include both name and email, separated by a comma.");
+  if (!name || !email) {
+    alert("Please enter both your name and email before submitting.");
+    return;
+  }
 
-  // Add name, email, and timestamp to data
   const submission = {
     name,
     email,
@@ -348,15 +355,21 @@ async function submitToGoogleSheet() {
     data: labelData
   };
 
-  // Send to Google Sheet (no-CORS for GitHub safety)
-  fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(submission)
-  });
+  // Replace this URL with your own Google Apps Script web app URL
+  const scriptURL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
 
-  alert("Submitted successfully! Thank you, " + name + ".");
+  try {
+    await fetch(scriptURL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(submission)
+    });
+    alert("Submitted successfully! Thank you, " + name + ".");
+  } catch (error) {
+    console.error("Error submitting:", error);
+    alert("There was a problem submitting your data.");
+  }
 }
 
 
