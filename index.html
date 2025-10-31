@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-<h2>Label Generator v1.1</h2>
+<h2>Label Generator v1.3</h2>
 <p style="max-width:900px;text-align:center">
 Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export engraving instruction file for all labels.
 </p>
@@ -35,7 +35,7 @@ Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> 
   <button id="previewBtn" type="button">Preview Label(s)</button>
   <button id="downloadBtn" type="button">Download engraving Instruction file</button>
   <button id="toggleAdvanced" type="button">Show Advanced Options</button>
-  <button onclick="submitToGoogleSheet()">Submit Label Request</button>
+  <button id="submitBtn">Submit Design for Engraving</button>
 </div>
 
 <div class="advanced" id="advancedOptions">
@@ -330,29 +330,35 @@ function downloadJson(){
 }
 
   /* Submit to google sheets */
-  async function submitToGoogleSheet() {
-  const name = prompt("Enter your name (optional):");
-  const email = prompt("Enter your email (optional):");
-  
+async function submitToGoogleSheet() {
+  if (!labelData) return alert("Upload JSON first");
+
+  // Ask for name and email in one popup
+  const userInfo = prompt("Please enter your name and email, separated by a comma:\n(e.g. John Smith, john@example.com)");
+  if (!userInfo) return alert("Submission cancelled.");
+
+  const [name, email] = userInfo.split(",").map(s => s.trim());
+  if (!name || !email) return alert("Please include both name and email, separated by a comma.");
+
+  // Add name, email, and timestamp to data
   const submission = {
     name,
     email,
-    data: labelData  // whatever JSON object you already generate
+    timestamp: new Date().toISOString(),
+    data: labelData
   };
-  
-  try {
-    const response = await fetch("https://script.google.com/macros/s/AKfycbzf_fy7C2FjvF-iQ6ZVq8lBjkXy8PZFifZ1D0-oqQG33ZEq1FxKWIjTtN7JF0rFSt4j/exec", {
-      method: "POST",
-      mode: "cors", // use "cors" if script is public
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submission)
-    });
-    alert("✅ Label submitted successfully! You’ll receive a unique reference shortly.");
-  } catch (err) {
-    console.error(err);
-    alert("⚠️ Error submitting label.");
-  }
+
+  // Send to Google Sheet (no-CORS for GitHub safety)
+  fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(submission)
+  });
+
+  alert("Submitted successfully! Thank you, " + name + ".");
 }
+
 
 
   
